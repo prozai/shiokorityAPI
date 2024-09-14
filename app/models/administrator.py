@@ -1,5 +1,5 @@
 import pymysql
-from flask import current_app, jsonify
+from flask import current_app
 import bcrypt
 from pymysql.err import MySQLError
 
@@ -12,15 +12,15 @@ class Administrator():
                 host=current_app.config['MYSQL_HOST'],
                 user=current_app.config['MYSQL_USER'],
                 password=current_app.config['MYSQL_PASSWORD'],
-                database='usermanagement',
+                database='user_management',
                 cursorclass=pymysql.cursors.DictCursor
             ) as connection:
                 with connection.cursor() as cursor:
                     # Query to retrieve the hashed password and status
                     sql_query = '''
-                        SELECT admin_id, admin_username, pass_hash, status 
+                        SELECT admin_id, admin_email, pass_hash, status 
                         FROM admin 
-                        WHERE admin_username = %s
+                        WHERE admin_email = %s
                     '''
                     cursor.execute(sql_query, (email,))
                     user = cursor.fetchone()
@@ -30,7 +30,7 @@ class Administrator():
                         print(f"Login attempt failed: User not found for email {email}")
                         return False
                     
-                    if user['status'] != 'active':
+                    if user['status'] != 1:
                         print(f"Login attempt failed: Inactive account for email {email}")
                         return False
                     

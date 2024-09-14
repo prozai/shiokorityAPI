@@ -45,7 +45,7 @@ def logout():
 def createMerchant():
     if request.method == 'POST':
         data = request.get_json()  # Get the JSON data from the request
-
+        print(data)
         # Extract the necessary fields
         name = data.get('name')
         email = data.get('email')
