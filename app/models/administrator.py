@@ -4,7 +4,6 @@ import bcrypt
 from pymysql.err import MySQLError
 
 class Administrator():
-    
     # 227
     def validateLogin(email, password):
         try:
@@ -39,7 +38,6 @@ class Administrator():
                     
                     # Check if the provided password matches the hashed password
                     if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
-                        print(f"Login successful for user {email}")
                         return True
                     
                     else:

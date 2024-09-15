@@ -19,9 +19,10 @@ def registerMerchant():
     merch_name = data.get('merch_name')
     merch_phone = data.get('merch_phone')
     merch_address = data.get('merch_address')
-    
+
+    print(merch_email, password, merch_name, merch_phone, merch_address)
     # Call the Merchant model to create the new merchant
-    success, message = Merchant.registerMerchant(merch_email, password, merch_name, merch_phone, merch_address)
+    success, message = Merchant().registerMerchant(merch_email, password, merch_name, merch_phone, merch_address)
     
     if success:
         return jsonify({'success': True, 'message': message}), 201  # 201 = Created
