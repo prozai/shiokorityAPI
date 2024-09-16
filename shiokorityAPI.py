@@ -25,10 +25,4 @@ def hello():
     return "this is main page without anything"
 
 if __name__ == "__main__":
-    # app.config.from_object(config[config_name])
-    # print(f"Loaded configuration: {config_name}")
-    # print(f"DEBUG mode: {app.config['DEBUG']}")
-    # print(f"MYSQL_HOST: {app.config['MYSQL_HOST']}")
-    # print(f"MYSQL_USER: {app.config['MYSQL_USER']}")
-    # print(f"MYSQL_PASSWORD: {app.config['MYSQL_PASSWORD']}")
     app.run()
