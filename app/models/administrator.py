@@ -11,14 +11,14 @@ class Administrator():
                 host=current_app.config['MYSQL_HOST'],
                 user=current_app.config['MYSQL_USER'],
                 password=current_app.config['MYSQL_PASSWORD'],
-                database='user_management',
+                database=current_app.config['USER_SCHEMA'],
                 cursorclass=pymysql.cursors.DictCursor
             ) as connection:
                 with connection.cursor() as cursor:
                     # Query to retrieve the hashed password and status
                     sql_query = '''
                         SELECT admin_id, admin_email, pass_hash, status 
-                        FROM admin 
+                        FROM Admin 
                         WHERE admin_email = %s
                     '''
                     cursor.execute(sql_query, (email,))

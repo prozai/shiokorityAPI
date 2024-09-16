@@ -19,10 +19,11 @@ def registerMerchant():
     merch_name = data.get('merch_name')
     merch_phone = data.get('merch_phone')
     merch_address = data.get('merch_address')
-
-    print(merch_email, password, merch_name, merch_phone, merch_address)
+    
     # Call the Merchant model to create the new merchant
-    success, message = Merchant().registerMerchant(merch_email, password, merch_name, merch_phone, merch_address)
+
+    success, message = merchant_instance.registerMerchant(merch_email, password, merch_name, merch_phone, merch_address)
+
     
     if success:
         return jsonify({'success': True, 'message': message}), 201  # 201 = Created
@@ -44,7 +45,7 @@ def login_merchant():
     # The plain-text password (password) is compared with the hashed password (merchant['pass_hash'])
     if merchant and bcrypt.checkpw(password.encode('utf-8'), merchant['pass_hash'].encode('utf-8')):
         # Store the merchant ID in the session upon successful login
-        session['merchant_id'] = merchant['merch_id']
+        session['merch_id'] = merchant['merch_id']
         return jsonify({'success': True, 'message': 'Login successful'}), 200
     else:
         return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
@@ -53,18 +54,17 @@ def login_merchant():
 # Fetch Merchant Profile Endpoint
 @merchantBlueprint.route('/profile', methods=['GET'])
 def profile():
-    if 'merchant_id' not in session:
+    if 'merch_id' not in session:
         return jsonify({'success': False, 'message': 'Unauthorized access'}), 401
 
     # Fetch the merchant profile
-    merchant = merchant_instance.getMerchantByID(session['merchant_id'])
+    merchant = merchant_instance.getMerchantByID(session['merch_id'])
     if merchant:
         return jsonify({
             'success': True,
             'merchant': {
                 'name': merchant['merch_name'],
                 'email': merchant['merch_email'],
-                'name': merchant['merch_name'],
                 'phone': merchant['merch_phone'],
                 'address': merchant['merch_address']
             }
@@ -76,13 +76,11 @@ def profile():
 # Update Merchant Details Endpoint
 @merchantBlueprint.route('/update', methods=['PUT'])
 def update_merchant():
-    if 'merchant_id' not in session:
+    if 'merch_id' not in session:
         return jsonify({'success': False, 'message': 'Unauthorized access'}), 401
 
-    merchant = Merchant.updateMerchantDetails(session['merchant_id'], data)
-
     data = request.get_json()
-    result = merchant_instance.updateMerchantDetails(session['merchant_id'], data)
+    result = merchant_instance.updateMerchantDetails(session['merch_id'], data)
 
     if result:
         return jsonify({'success': True, 'message': 'Merchant details updated successfully'}), 200
@@ -93,5 +91,41 @@ def update_merchant():
 # Logout Merchant Endpoint
 @merchantBlueprint.route('/logout', methods=['POST'])
 def logout():
-    session.pop('merchant_id', None)
+    session.pop('merch_id', None)
     return jsonify({'success': True, 'message': 'Logged out successfully'}), 200
+
+# Route to send payment to merchant (via the "bank" page)
+@merchantBlueprint.route('/bankpage', methods=['POST'])
+def processPayment():
+    data = request.get_json()
+    merch_email = data.get('merch_email')
+    amount = data.get('amount')
+
+    # Find the merchant by email
+    merchant = merchant_instance.getMerchantByEmail(merch_email)
+
+    if not merchant:
+        return jsonify({'success': False, 'message': 'Merchant not found'}), 404
+    
+    # Call the model to add the payment to the merchant's account
+    success, message = merchant_instance.addPayment(merch_email, amount)
+
+    if success:
+        return jsonify({'success': True, 'message': 'Payment sent successfully'}), 200
+    else:
+        return jsonify({'success': False, 'message': message}), 400
+
+# Route to fetch the merchant's transactions and balance
+@merchantBlueprint.route('/merchant/transactions', methods=['GET'])
+def merchant_transactions():
+    merch_id = request.args.get('merch_id')  # Assuming merchant ID is passed as a query parameter
+    transactions, balance = merchant_instance.getTransactionHistory(merch_id)
+
+    if transactions is not None:
+        return jsonify({
+            'success': True,
+            'transactions': transactions,
+            'balance': balance
+        }), 200
+    else:
+        return jsonify({'success': False, 'message': 'Merchant not found'}), 404
